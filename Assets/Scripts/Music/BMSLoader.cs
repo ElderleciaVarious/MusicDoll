@@ -81,7 +81,7 @@ namespace MusicDoll
                     // 配置レーンを読み込む
                     place = ChannelToPlace(readBufferArray[0].Substring(3, 2));
 
-                    // ノーツ配置にかかわるレーンかどうか
+                    // ノーツ配置にかかわらないレーン（BPM変更等）
                     if (place >= 10)
                     {
                         // BPM変化
