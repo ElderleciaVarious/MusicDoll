@@ -80,7 +80,7 @@ namespace MusicDoll
             foreach (MusicPlaceKind place in Enum.GetValues(typeof(MusicPlaceKind)))
             {
                 activeNoteList[place] = new List<MusicNote>(noteList[place]);
-                noteTopIndexList[place] = 0;
+                noteTopIndexList[place] = (activeNoteList[place].Count != 0) ? 0 : EndOfNoteIndex;
             }
 
             // 登録したBPM変化から予め時間を計算しておく

@@ -70,7 +70,6 @@ namespace MusicDoll
             {
                 return;
             }
-
             for (int index = 1; index < tempoDataList.Count; ++index)
             {
                 MusicTempoData tempo = tempoDataList[index];
@@ -109,6 +108,7 @@ namespace MusicDoll
             currentBpmStartTime = tempoDataList[nextTempoIndex].StartTime;
             currentBpmStartPosition = tempoDataList[nextTempoIndex].TotalPosition;
             ++nextTempoIndex;
+            MusicManager.Instance.SetCurrentBpmText();
             
             // テンポのリスト末尾に到達したら次の変化はない
             if(nextTempoIndex >= tempoDataList.Count)

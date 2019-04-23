@@ -18,24 +18,48 @@ namespace MusicDoll
         private static MusicSheet sheet;
 
         // BMS形式ファイルの配置定数を定義
+        private const string OPERATION_PLAYER = "PLAYER";     // 譜面形式定義行
         private const string OPERATION_BPM = "BPM";     // BPM定義行
-        private const int PLACE_BPM = 13;       // BPM(0〜255の整数値)
-        private const int PLACE_EX_BPM = 18;    // 拡張BPM(実数値)
+        private const int PLACE_BPM = 3;       // BPM(0〜255の整数値)
+        private const int PLACE_EX_BPM = 8;    // 拡張BPM(実数値)
+
+        /// <summary>
+        /// 譜面読み込みモード、3が通常(BMS Double譜面)で1はPMS形式とする
+        /// </summary>
+        private static int LoadMode = 3;
 
         /// <summary>
         /// BMSの配置命令番号を配置レーン種別に変換する
         /// </summary>
-        private static readonly Dictionary<int, MusicPlaceKind> placeIntToKind = new Dictionary<int, MusicPlaceKind>
+        private static readonly Dictionary<int, Dictionary<int, MusicPlaceKind>> placeIntToKind = new Dictionary<int, Dictionary<int, MusicPlaceKind>>
         {
-            { 11, MusicPlaceKind.LeftUpper},
-            { 12, MusicPlaceKind.LeftLower},
-            { 13, MusicPlaceKind.Center1},
-            { 14, MusicPlaceKind.Center2},
-            { 15, MusicPlaceKind.Center3},
-            { 22, MusicPlaceKind.Center4},
-            { 23, MusicPlaceKind.Center5},
-            { 24, MusicPlaceKind.RightLower},
-            { 25, MusicPlaceKind.RightUpper}
+            { 3, new Dictionary<int, MusicPlaceKind>{
+                { 11, MusicPlaceKind.LeftUpper},
+                { 12, MusicPlaceKind.LeftLower},
+                { 13, MusicPlaceKind.CenterLower1},
+                { 14, MusicPlaceKind.CenterLower2},
+                { 15, MusicPlaceKind.CenterLower3},
+                { 18, MusicPlaceKind.CenterLower4},
+                { 19, MusicPlaceKind.CenterLower5},
+                { 21, MusicPlaceKind.RightLower},
+                { 22, MusicPlaceKind.RightUpper},
+                { 23, MusicPlaceKind.CenterUpper1},
+                { 24, MusicPlaceKind.CenterUpper2},
+                { 25, MusicPlaceKind.CenterUpper3},
+                { 28, MusicPlaceKind.CenterUpper4},
+                { 29, MusicPlaceKind.CenterUpper5}
+            }},
+            { 1, new Dictionary<int, MusicPlaceKind>{
+                { 11, MusicPlaceKind.LeftUpper},
+                { 12, MusicPlaceKind.LeftLower},
+                { 13, MusicPlaceKind.CenterLower1},
+                { 14, MusicPlaceKind.CenterLower2},
+                { 15, MusicPlaceKind.CenterLower3},
+                { 22, MusicPlaceKind.CenterLower4},
+                { 23, MusicPlaceKind.CenterLower5},
+                { 24, MusicPlaceKind.RightLower},
+                { 25, MusicPlaceKind.RightUpper}
+            }}
         };
 
         /// <summary>
@@ -46,6 +70,7 @@ namespace MusicDoll
             // 譜面データ初期化
             sheet = new MusicSheet(master.Id);
             sheet.InitializeLoad();
+            LoadMode = 3;
 
             // 譜面ファイル情報を取得する
             string fileName = string.Format("{0}/sheet3.pms", master.FileName);
@@ -93,7 +118,7 @@ namespace MusicDoll
                 readBuffer = readBuffer.Substring(1);
 
                 // BPMの行の場合は専用の処理を行う
-                if (ReadBPMLine(readBuffer))
+                if (ReadHeaderLine(readBuffer))
                 {
                     continue;
                 }
@@ -104,11 +129,11 @@ namespace MusicDoll
         }
 
         /// <summary>
-        /// BPMに関する行を処理する
+        /// ヘッダ定義に関する行を処理する
         /// ここではBPMの数値定義を行い、実際のBPM変更は他のノーツと同様に処理する
-        /// BPM設定とは異なる行の場合はfalseを返す
+        /// ヘッダ設定とは異なる行の場合はfalseを返す
         /// </summary>
-        private static bool ReadBPMLine(string readBuffer)
+        private static bool ReadHeaderLine(string readBuffer)
         {
             // 先頭が数字の場合はBPM設定ではない
             if (char.IsDigit(readBuffer[0]))
@@ -117,9 +142,14 @@ namespace MusicDoll
             }
 
             string[] readBufferArray = readBuffer.Split(' ');
-
+            
+            // 譜面形式
+            if(readBufferArray[0].Equals(OPERATION_PLAYER))
+            {
+                LoadMode = int.Parse(readBufferArray[1]);
+            }
             // 初期BPM設定処理
-            if (readBufferArray[0].Equals(OPERATION_BPM))
+            else if (readBufferArray[0].Equals(OPERATION_BPM))
             {
                 int bpm = MusicTempoManager.GetBpmScaleValue(readBufferArray[1]);
                 sheet.StartBpm = bpm;
@@ -179,7 +209,7 @@ namespace MusicDoll
                 // 実際のノーツ配置
                 ReadLocationLine(readBufferArray[1], (int position, string noteCode) =>
                 {
-                    sheet.AddMusicNote(placeIntToKind[command], measure, position);
+                    sheet.AddMusicNote(placeIntToKind[LoadMode][command], measure, position);
                 });
             }
         }

@@ -16,9 +16,6 @@ namespace MusicDoll
         [SerializeField]
         private Image image = null;
 
-        [SerializeField]
-        private MusicTapEffectObject effect = null;
-
         /// <summary>
         /// ノーツデータ
         /// </summary>
@@ -35,9 +32,44 @@ namespace MusicDoll
         private Vector2 endPosition;
 
         /// <summary>
+        /// 自身のRectTransform
+        /// </summary>
+        private RectTransform rectTransform;
+
+        /// <summary>
         /// ノーツ画像
         /// </summary>
         public Image NoteImage { get{ return image; } }
+
+        /// <summary>
+        /// ノーツ色
+        /// </summary>
+        private Color noteColor;
+
+        /// <summary>
+        /// ノーツ色
+        /// </summary>
+        public Color NoteColor { get { return noteColor; }
+            set
+            {
+                noteColor = value;
+                NoteImage.color = noteColor;
+            } }
+
+        /// <summary>
+        /// 現在使用中のノーツであるか
+        /// </summary>
+        public bool IsActive { private set; get; }
+
+        /// <summary>
+        /// 対応するノーツがすでに過ぎ去っているか
+        /// </summary>
+        public bool IsNotePassed { get { return note.IsAppeared && !note.IsActive; } }
+
+        private void Awake()
+        {
+            rectTransform = GetComponent<RectTransform>();
+        }
 
         /// <summary>
         /// 初期設定
@@ -46,17 +78,11 @@ namespace MusicDoll
         {
             this.note = note;
 
-            foreach(int timing in MusicConst.NotesTimingColor.Keys)
-            {
-                if(note.LocalPosition % timing == 0)
-                {
-                    image.color = MusicConst.NotesTimingColor[timing];
-                    break;
-                }
-            }
-
-            note.Place.GetTargetPosition(out startPosition, out endPosition);
-            transform.position = startPosition;
+            startPosition = MusicTapNotesLocator.Instance.StartPositions[note.Place];
+            endPosition = MusicTapNotesLocator.Instance.EndPositions[note.Place];
+            rectTransform.anchoredPosition = startPosition;
+            IsActive = true;
+            gameObject.SetActive(true);
         }
 
         /// <summary>
@@ -65,18 +91,19 @@ namespace MusicDoll
         /// <param name="parameter">1:生成位置 0:判定位置 とした位置の割合パラメータ</param>
         public void Move(float parameter)
         {
-            transform.position = parameter * startPosition + (1 - parameter) * endPosition;
+            rectTransform.anchoredPosition = parameter * startPosition + (1 - parameter) * endPosition;
+
+            noteColor.a = 1f - parameter * parameter * parameter;
+            image.color = NoteColor;
         }
 
         /// <summary>
-        /// このオブジェクトを破棄する
-        /// 必ずMusicNote.DestroyObjectから呼び出される
+        /// このオブジェクトの使用を終えて非表示にする
         /// </summary>
-        public void DestroyObject()
+        public void Stop()
         {
-            MusicTapEffectObject effectObject = Instantiate(effect, transform.position, Quaternion.identity);
-            effectObject.transform.SetParent(transform.parent);
-            Destroy(gameObject);
+            IsActive = false;
+            gameObject.SetActive(false);
         }
     }
 }

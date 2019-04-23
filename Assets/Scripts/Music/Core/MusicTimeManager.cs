@@ -37,8 +37,18 @@ namespace MusicDoll
         /// </summary>
         private MusicTempoManager tempoManager;
 
+        /// <summary>
+        /// 初期化完了フラグ
+        /// </summary>
+        private bool isInitialized = false;
+
         private void Update()
         {
+            if(!isInitialized)
+            {
+                return;
+            }
+
             MusicTimer = Time.time - musicStartTime;
 #if DEBUG
             MusicTimer -= debugTimeOffset;
@@ -60,6 +70,8 @@ namespace MusicDoll
             musicStartTime = Time.time + timerOffset;
             tempoManager = MusicManager.Instance.GetCurrentTempoManager();
             tempoManager.StartMusic();
+
+            isInitialized = true;
         }
     }
 }

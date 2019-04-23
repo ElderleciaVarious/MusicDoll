@@ -47,5 +47,41 @@ namespace MusicDoll.MasterData
             MaxBpm = int.Parse(data[5]);
             MinBpm = int.Parse(data[6]);
         }
+
+        public static MusicSheetMasterData GetDebugSheet(ulong id)
+        {
+            MusicSheetMasterData master = new MusicSheetMasterData();
+
+            string[] data = new string[7];
+            data[0] = id.ToString();
+
+            if(id == 3)
+            {
+                data[2] = "3";
+                data[3] = "3";
+                data[4] = "7";
+                data[5] = "206";
+                data[6] = "206";
+            }
+            else if(id == 4)
+            {
+                data[2] = "4";
+                data[3] = "1";
+                data[4] = "4";
+                data[5] = "279";
+                data[6] = "279";
+            }
+            else
+            {
+                data[2] = id.ToString();
+                data[3] = "3";
+                data[4] = "9";
+                data[5] = "200";
+                data[6] = "200";
+            }
+
+            master.Initialize(data);
+            return master;
+        }
     }
 }

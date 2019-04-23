@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace MusicDoll
 {
@@ -12,22 +10,33 @@ namespace MusicDoll
         /// <summary>
         /// 同時押し線の先端を指すオブジェクト
         /// </summary>
-        private GameObject startObject;
+        private MusicNoteGameObject startObject;
         /// <summary>
         /// 同時押し線の終端を指すオブジェクト
         /// </summary>
-        private GameObject endObject;
+        private MusicNoteGameObject endObject;
 
         /// <summary>
         /// 線の描画
         /// </summary>
         private LineRenderer line;
 
+        /// <summary>
+        /// 関連づいていないノーツか
+        /// </summary>
+        public bool IsActive { get { return gameObject.activeSelf; } }
+
+        private void Awake()
+        {
+            line = GetComponent<LineRenderer>();
+        }
+
         private void Update()
         {
-            if(startObject == null || endObject == null)
+            // どちらかのノーツが消えたら消去
+            if (startObject.IsNotePassed || endObject.IsNotePassed)
             {
-                Destroy(gameObject);
+                Delete();
                 return;
             }
 
@@ -38,12 +47,20 @@ namespace MusicDoll
         /// <summary>
         /// 同時押し線の初期設定
         /// </summary>
-        public void Initialize(GameObject startObject, GameObject endObject)
+        public void Initialize(MusicNoteGameObject startObject, MusicNoteGameObject endObject)
         {
             this.startObject = startObject;
             this.endObject = endObject;
 
-            line = GetComponent<LineRenderer>();
+            gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// 同時押し線を消す
+        /// </summary>
+        public void Delete()
+        {
+            gameObject.SetActive(false);
         }
     }
 }

@@ -50,12 +50,26 @@ namespace MusicDoll.MasterData
                 data[3] = "GoBeyond";
                 data[4] = "0.42";
             }
-            else
+            else if(id == 2)
             {
                 data[1] = "POSSESSION";
                 data[2] = "TAG underground";
                 data[3] = "Possession";
-                data[4] = "0";
+                data[4] = "0.5";
+            }
+            else if(id == 3)
+            {
+                data[1] = "美に入り彩を穿つ";
+                data[2] = "小早川紗枝 & 塩見周子";
+                data[3] = "biniiru";
+                data[4] = "-0.25";
+            }
+            else
+            {
+                data[1] = "VALiD ViRUS";
+                data[2] = "yoho";
+                data[3] = "valid";
+                data[4] = "-0.5";
             }
 
             master.Initialize(data);

@@ -14,7 +14,25 @@ namespace MusicDoll
         private float timer = 0f;
         private Color color = Color.white;
 
+        /// <summary>
+        /// 自身のRectTransform
+        /// </summary>
+        private RectTransform rectTransform;
+
+        /// <summary>
+        /// エフェクトが表示されているか
+        /// </summary>
+        public bool IsActive { get { return gameObject.activeSelf; } }
+
+        /// <summary>
+        /// エフェクト表示時間
+        /// </summary>
         private static readonly float EffectTime = 0.5f;
+
+        private void Awake()
+        {
+            rectTransform = GetComponent<RectTransform>();
+        }
 
         private void Update()
         {
@@ -26,8 +44,18 @@ namespace MusicDoll
 
             if(timer > EffectTime)
             {
-                Destroy(gameObject);
+                gameObject.SetActive(false);
             }
+        }
+
+        /// <summary>
+        /// 初期化する
+        /// </summary>
+        public void Initialize(Vector2 position)
+        {
+            timer = 0f;
+            rectTransform.anchoredPosition = position;
+            gameObject.SetActive(true);
         }
     }
 }

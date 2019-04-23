@@ -20,16 +20,16 @@ namespace MusicDoll
         public static readonly int BPM_SCALE = 100;
 
         /// <summary>
-        /// タイミングごとのノーツカラー
+        /// ノーツカラー
         /// </summary>
-        public static readonly Dictionary<int, Color> NotesTimingColor = new Dictionary<int, Color>()
+        public static readonly List<Color> NotesColor = new List<Color>
         {
-            { POSITION_FINENESS /  4, Color.red },
-            { POSITION_FINENESS /  8, Color.blue },
-            { POSITION_FINENESS / 16, Color.yellow },
-            { POSITION_FINENESS / 32, Color.green },
-            { POSITION_FINENESS /  3, Color.cyan },
-            { POSITION_FINENESS /  6, Color.magenta },
+            new Color(1.0f, 0.3f, 0.3f),
+            new Color(1.0f, 1.0f, 0.3f),
+            new Color(0.3f, 1.0f, 0.3f),
+            new Color(0.3f, 1.0f, 1.0f),
+            new Color(0.3f, 0.3f, 1.0f),
+            new Color(1.0f, 0.3f, 1.0f),
         };
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace MusicDoll
         /// <summary>
         /// 全てGreatで楽曲を終了した際に得られるゲージの内部数値の合計値
         /// </summary>
-        public static readonly int TotalGaugeValue = 2560;
+        public static readonly int TotalGaugeValue = 3000;
 
         /// <summary>
         /// 楽曲開始時のゲージ数値
@@ -70,11 +70,16 @@ namespace MusicDoll
     {
         LeftUpper = 1,
         LeftLower,
-        Center1,
-        Center2,
-        Center3,
-        Center4,
-        Center5,
+        CenterLower1,
+        CenterLower2,
+        CenterLower3,
+        CenterLower4,
+        CenterLower5,
+        CenterUpper1,
+        CenterUpper2,
+        CenterUpper3,
+        CenterUpper4,
+        CenterUpper5,
         RightLower,
         RightUpper,
     }
@@ -94,40 +99,6 @@ namespace MusicDoll
 
     public static class MusicPlaceKindExt
     {
-        /// <summary>
-        /// ノーツの場所を取得する
-        /// </summary>
-        public static void GetTargetPosition(this MusicPlaceKind place, out Vector2 startPosition, out Vector2 endPosition)
-        {
-            float startX = 0f;
-            float startY = 0f;
-            float endX   = 0f;
-            float endY   = 0f;
-
-            if(place.IsLeftSide())
-            {
-                startX = 0;
-                endX = -600f;
-                startY = endY = (place == MusicPlaceKind.LeftUpper) ? 120f : -120f;
-            }
-            else if(place.IsRightSide())
-            {
-                startX = 0;
-                endX = 600f;
-                startY = endY = (place == MusicPlaceKind.RightUpper) ? 120f : -120f;
-            }
-            else
-            {
-                startY = 680f;
-                endY = -400f;
-
-                startX = endX = 200f * (int)place - 1000f;
-            }
-
-            startPosition = new Vector2(startX, startY);
-            endPosition = new Vector2(endX, endY);
-        }
-
         /// <summary>
         /// 左側ノーツの場合
         /// </summary>

@@ -1,4 +1,6 @@
-﻿namespace MusicDoll
+﻿using System.Collections.Generic;
+
+namespace MusicDoll
 {
     /// <summary>
     /// 各譜面の各ノーツ1つ1つを表現するクラス
@@ -35,12 +37,17 @@
         /// <summary>
         /// すでに生成されていたらtrue
         /// </summary>
-        public bool IsAppeared { get; set; }
+        public bool IsAppeared { private set; get; }
 
         /// <summary>
         /// 生成済みの表示用GameObject
         /// </summary>
         public MusicNoteGameObject NoteObject { private set; get; }
+
+        /// <summary>
+        /// このオブジェクトについている同時押し線
+        /// </summary>
+        public List<MusicTapLineObject> LineObjects { private set; get; }
 
         public MusicNote(int measure, int position, MusicPlaceKind place)
         {
@@ -51,6 +58,8 @@
 
             IsAppeared = false;
             NoteObject = null;
+
+            LineObjects = new List<MusicTapLineObject>();
         }
 
         /// <summary>
@@ -66,13 +75,18 @@
         }
 
         /// <summary>
-        /// このオブジェクトを破棄する
+        /// このノーツを破棄する
         /// 必ずMusicSheet.DestroyObjectから呼び出される
         /// </summary>
         public void DestroyObject()
         {
-            NoteObject.DestroyObject();
+            NoteObject.Stop();
             NoteObject = null;
+
+            foreach(MusicTapLineObject line in LineObjects)
+            {
+                line.Delete();
+            }
         }
 
         /// <summary>

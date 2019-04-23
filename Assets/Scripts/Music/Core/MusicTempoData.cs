@@ -32,7 +32,7 @@ namespace MusicDoll
         public MusicTempoData(int bpmLargeScale, int measure, int position)
         {
             BpmLargeScaleValue = bpmLargeScale;
-            Bpm = bpmLargeScale / MusicConst.BPM_SCALE;
+            Bpm = (float)bpmLargeScale / MusicConst.BPM_SCALE;
 
             TotalPosition = MusicConst.POSITION_FINENESS * measure + position;
 
@@ -47,11 +47,13 @@ namespace MusicDoll
             // 前回のBPM変化からこのBPM変化までのカウント
             int diffCount = TotalPosition - beforeTempo.TotalPosition;
 
-            // 譜面時間計算用の数値のうち、分子と分母に来るものをそれぞれ整数値で計算しておく
             int BaseTemp = diffCount * 24000;
             int divTemp = MusicConst.POSITION_FINENESS * beforeTempo.BpmLargeScaleValue;
 
-            StartTime = beforeTempo.StartTime + (float)BaseTemp / divTemp;
+            float measureCount = (float)diffCount / MusicConst.POSITION_FINENESS;
+            float bpmTime = 24000f / beforeTempo.BpmLargeScaleValue;
+
+            StartTime = beforeTempo.StartTime + measureCount * bpmTime;
         }
     }
 }

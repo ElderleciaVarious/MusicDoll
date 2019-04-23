@@ -167,7 +167,7 @@ namespace MusicDoll
             }
 
             // 判定表示
-            judgeObjects[((int)note.Place - 1) / 3].Set(kind, ComboValue);
+            judgeObjects[MusicTapNotesLocator.Instance.PlaceToJudgePosition[note.Place]].Set(kind, ComboValue);
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using MusicDoll.MasterData;
 
 namespace MusicDoll
 {
@@ -44,12 +45,6 @@ namespace MusicDoll
         [SerializeField]
         MusicSoundManager soundManager = null;
 
-        [SerializeField]
-        private MusicTapLineObject tapLinePrefab = null;
-
-        [SerializeField]
-        private Transform lineRoot = null;
-
         /// <summary>
         /// MusicManagerインスタンス
         /// Awakeで初期化されるため、MusicMainシーン内のStart以降でのみ呼び出せる
@@ -60,6 +55,11 @@ namespace MusicDoll
         /// 譜面データ管理クラス
         /// </summary>
         private MusicDataManager dataManager = new MusicDataManager();
+
+        /// <summary>
+        /// 同時押しノーツ色の次に参照するインデックス
+        /// </summary>
+        private int nextNotesColorIndex = 0;
 
         /// <summary>
         /// プレイ中の状態
@@ -84,7 +84,8 @@ namespace MusicDoll
                 case State.Init:
                     break;
                 case State.Start:
-                    MasterData.MusicMasterData master = MasterData.MusicMasterData.GetDebugSheet(dataManager.currentSheet.Id);
+                    MusicSheetMasterData sheetMaster = MusicSheetMasterData.GetDebugSheet(dataManager.currentSheet.Id);
+                    MusicMasterData master = MusicMasterData.GetDebugSheet(sheetMaster.MusicId);
                     timeManager.StartMusicTimer(master.Offset);
                     soundManager.PlayBGM();
                     state = State.Playing;
@@ -110,26 +111,46 @@ namespace MusicDoll
             // 出現ノーツがある場合は出現処理
             if(appearNotes != null)
             {
-                // 手前で出現したノーツ
-                MusicNote beforeNote = null;
-
-                foreach(MusicNote note in appearNotes)
+                // 同時押しか単押しで分ける
+                if(appearNotes.Count == 1)
                 {
                     // ノーツ生成処理
-                    objectManager.GenerateObject(note);
+                    objectManager.GenerateObject(appearNotes[0]);
+                }
+                else
+                {
+                    // 手前で出現したノーツ
+                    MusicNote beforeNote = null;
 
-                    // 同時押し線表示処理
-                    if (beforeNote != null)
+                    foreach (MusicNote note in appearNotes)
                     {
-                        MusicTapLineObject line = Instantiate(tapLinePrefab, lineRoot);
-                        line.Initialize(beforeNote.NoteObject.gameObject, note.NoteObject.gameObject);
+                        // ノーツ生成処理
+                        objectManager.GenerateObject(note, nextNotesColorIndex);
+                            
+                        // 同時押し線表示処理
+                        if (beforeNote != null)
+                        {
+                            objectManager.GenerateTapLine(note, beforeNote);
+                        }
+                        beforeNote = note;
                     }
-                    beforeNote = note;
+
+                    // 同時押し色のインデックスを移動
+                    nextNotesColorIndex = (++nextNotesColorIndex) % MusicConst.NotesColor.Count;
                 }
             }
 
             // 全てのノーツを動かす
             dataManager.currentSheet.MoveActiveNotes(timeManager.MusicPosition, displayCount);
+        }
+
+        /// <summary>
+        /// 初期化する
+        /// </summary>
+        public void Initialize()
+        {
+            nextNotesColorIndex = 0;
+            state = State.Start;
         }
 
         /// <summary>
@@ -140,9 +161,9 @@ namespace MusicDoll
             dataManager.LoadMusicSheet(sheetId);
 
             // 楽曲情報を設定する
-            MasterData.MusicMasterData master = MasterData.MusicMasterData.GetDebugSheet(sheetId);
-            Sprite sprite = Resources.Load<Sprite>(master.FileName + "/image");
-            uiManager.SetMusicInfo(sprite, master.Name, master.ArtistName);
+            MusicSheetMasterData sheetMaster = MusicSheetMasterData.GetDebugSheet(sheetId);
+            MusicMasterData master = MusicMasterData.GetDebugSheet(sheetMaster.MusicId);
+            uiManager.SetMusicInfo(master, sheetMaster);
 
             // 譜面の初期設定を行う
             if(dataManager.currentSheet.IsLoadCompleted)
@@ -153,7 +174,7 @@ namespace MusicDoll
             scoreManager.Initialize(dataManager.currentSheet.GetTotalNotesCount());
             soundManager.LoadBGM(master.FileName);
 
-            state = State.Start;
+            Initialize();
         }
 
         /// <summary>
@@ -164,6 +185,7 @@ namespace MusicDoll
             foreach(MusicNote note in notes)
             {
                 scoreManager.AddJudge(note, kind);
+                objectManager.GenerateEffect(note);
             }
             soundManager.PlaySE();
         }
@@ -174,6 +196,11 @@ namespace MusicDoll
         public MusicTempoManager GetCurrentTempoManager()
         {
             return dataManager.currentSheet.TempoManager;
+        }
+
+        public void SetCurrentBpmText()
+        {
+            uiManager.SetBpm(dataManager.currentSheet.TempoManager.currentBpmLargeScale / 100);
         }
     }
 }

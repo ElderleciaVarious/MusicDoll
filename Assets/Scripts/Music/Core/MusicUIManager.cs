@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using MusicDoll.MasterData;
 
 namespace MusicDoll
 {
@@ -35,13 +36,35 @@ namespace MusicDoll
         private Text bpmText = null;
 
         /// <summary>
+        /// 楽曲レベル
+        /// </summary>
+        [SerializeField]
+        private Image levelImage = null;
+
+        /// <summary>
+        /// 楽曲難易度
+        /// </summary>
+        [SerializeField]
+        private Image difficultyImage = null;
+
+        /// <summary>
         /// 楽曲情報を設定する
         /// </summary>
-        public void SetMusicInfo(Sprite sprite, string titleName, string artistName)
+        public void SetMusicInfo(MusicMasterData musicMaster, MusicSheetMasterData sheetMaster)
         {
-            image.sprite = sprite;
-            titleText.text = titleName;
-            artistText.text = artistName;
+            image.sprite = Resources.Load<Sprite>(musicMaster.FileName + "/image");;
+            titleText.text = musicMaster.Name;
+            artistText.text = musicMaster.ArtistName;
+
+            levelImage.sprite = Resources.Load<Sprite>("Music/select/level_" + sheetMaster.Level.ToString());
+
+            string difficulty = sheetMaster.Difficulty == MusicDifficultyKind.Astral ? "a" : "c";
+            difficultyImage.sprite = Resources.Load<Sprite>("Music/select/difficulty_" + difficulty);
+        }
+
+        public void SetBpm(int bpm)
+        {
+            bpmText.text = bpm.ToString();
         }
     }
 }
